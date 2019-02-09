@@ -22,7 +22,7 @@ jobs:
           key: v1-dependencies-{{ checksum "build.gradle" }}
       - run: gradle build
       - run: gradle bootJar
-      - run: ./gradlew properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]' >> version
+      - run: gradle properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]' >> version
       - persist_to_workspace:
           root: ~/ircWebBot
           paths:
