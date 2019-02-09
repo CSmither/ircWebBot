@@ -66,6 +66,7 @@ jobs:
           at: ./artifacts
       - run:
           name: "Publish Release on GitHub"
+          working_directory: ~/ircWebBot
           command: |
             VERSION=$(cat version)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/build/libs/ircWebBot-*.jar
@@ -85,6 +86,7 @@ jobs:
           command: docker build -t $REGISTRY:$CIRCLE_SHA1 .
       - run:
           name: Push docker image to docker hub
+          working_directory: ~/ircWebBot
           command: |
             VERSION=$(cat version)
             [[ $CIRCLE_BRANCH = "master" ]] && RELEASE="stable" || RELEASE="testing"
