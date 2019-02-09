@@ -90,7 +90,7 @@ jobs:
           command: |
             VERSION=$(cat version)
             [[ $CIRCLE_BRANCH = "master" ]] && RELEASE="stable" || RELEASE="testing"
-            docker login $DOCKER_USERNAME $DOCKER_PASSWORD
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-s
             docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE-$VERSION-SNAPSHOT
             docker push $REGISTRY:$RELEASE
             docker push $REGISTRY:$CIRCLE_SHA1
