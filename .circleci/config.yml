@@ -67,7 +67,7 @@ jobs:
           command: |
             VERSION=$(project_version=$(./gradlew properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]'))
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/build/libs/ircWebBot-*.jar
-  docker-release:
+  docker_release:
     docker:
       - image: circleci/python:3.6.6-jessie-browsers
     environment:
