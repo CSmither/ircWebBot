@@ -1,0 +1,10 @@
+password: "testPasswd"
+server:
+  port: 8080
+irc:
+  host: dorne.smither.org
+  port: 6697
+  password: newcastle
+  nick: devBot
+  name: devBot
+  sslEnabled: true

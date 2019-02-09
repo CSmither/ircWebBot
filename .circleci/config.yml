@@ -1,0 +1,122 @@
+version: 2
+jobs:
+  build_server:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/ircWebBot
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout:
+          path: ~/ircWebBot
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+      - run: gradle build
+      - run: gradle bootJar
+      - persist_to_workspace:
+          root: ~/ircWebBot
+          paths:
+            - Dockerfile
+            - build/libs
+            - build/resources
+  test_server:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/ircWebBot
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout:
+          path: ~/ircWebBot
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+      - run: gradle check
+      - store_artifacts:
+          path: build/reports
+          destination: build_reports
+      - store_test_results:
+          path: build/test-results
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - checkout:
+          path: ~/ircWebBot
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=$(project_version=$(./gradlew properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]'))
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/build/libs/ircWebBot-*.jar
+  docker-release:
+    docker:
+      - image: circleci/python:3.6.6-jessie-browsers
+    environment:
+      REGISTRY: smither/ircWebBot
+    steps:
+      - attach_workspace:
+          at: ~/opwatch
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker image
+          working_directory: ~/opwatch/server
+          command: docker build -t $REGISTRY:$CIRCLE_SHA1 .
+      - run:
+          name: Push docker image to docker hub
+          command: |
+            VERSION=$(cat ~/opwatch/.version)
+            [[ $CIRCLE_BRANCH = "master" ]] && RELEASE="stable" || RELEASE="testing"
+            docker login $DOCKER_USERNAME $DOCKER_PASSWORD
+            docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE-$VERSION-SNAPSHOT
+            docker push $REGISTRY:$RELEASE
+            docker push $REGISTRY:$CIRCLE_SHA1
+
+workflows:
+  version: 2
+  server:
+    jobs:
+      - build_server
+      - test_server:
+          requires:
+            - build_server
+      - docker_release:
+          requires:
+            - test_server
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - release-approval:
+          type: approval # requires that an in-app button be clicked by an appropriate member of the project to continue.
+          requires:
+            - test_server
+          filters:
+            branches:
+              only: master
+      - publish-github-release:
+          requires:
+            - release-approval
+          filters:
+            branches:
+              only: master
