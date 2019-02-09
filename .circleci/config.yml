@@ -74,12 +74,12 @@ jobs:
       REGISTRY: smither/irc-web-bot
     steps:
       - attach_workspace:
-          at: ~/opwatch
+          at: ~/ircWebBot
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
           name: Build Docker image
-          working_directory: ~/opwatch/server
+          working_directory: ~/ircWebBot
           command: docker build -t $REGISTRY:$CIRCLE_SHA1 .
       - run:
           name: Push docker image to docker hub
