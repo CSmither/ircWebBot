@@ -84,7 +84,7 @@ jobs:
       - run:
           name: Push docker image to docker hub
           command: |
-            VERSION=$(cat ~/opwatch/.version)
+            VERSION=$(project_version=$(./gradlew properties -q | grep "version:" | awk '{print $2}' | tr -d '[:space:]'))
             [[ $CIRCLE_BRANCH = "master" ]] && RELEASE="stable" || RELEASE="testing"
             docker login $DOCKER_USERNAME $DOCKER_PASSWORD
             docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE-$VERSION-SNAPSHOT
