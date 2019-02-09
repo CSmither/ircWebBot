@@ -71,7 +71,7 @@ jobs:
     docker:
       - image: circleci/python:3.6.6-jessie-browsers
     environment:
-      REGISTRY: smither/ircWebBot
+      REGISTRY: smither/irc-web-bot
     steps:
       - attach_workspace:
           at: ~/opwatch
