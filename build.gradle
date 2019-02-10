@@ -31,6 +31,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-parent:2.0.6.RELEASE'
     compile 'org.springframework.boot:spring-boot-starter-web:2.0.6.RELEASE'
     compile 'org.kitteh.irc:client-lib:5.1.0'
+    compile 'com.rollbar:rollbar-java:1.4.0'
     compileOnly 'org.projectlombok:lombok:1.18.4'
     annotationProcessor 'org.projectlombok:lombok:1.18.4'
 
