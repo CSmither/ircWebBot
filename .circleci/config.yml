@@ -91,9 +91,11 @@ jobs:
             VERSION=$(cat version)
             [[ $CIRCLE_BRANCH = "master" ]] && RELEASE="stable" || RELEASE="testing"
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-            docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE-$VERSION-SNAPSHOT
-            docker push $REGISTRY:$RELEASE
+            docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE-$VERSION
+            docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE
             docker push $REGISTRY:$CIRCLE_SHA1
+            docker push $REGISTRY:$RELEASE-$VERSION
+            docker push $REGISTRY:$RELEASE
 
 workflows:
   version: 2
