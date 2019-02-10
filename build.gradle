@@ -45,6 +45,6 @@ dependencies {
 //}
 
 bootJar {
-    mainClassName = 'org.smither.opwatch.server.Application'
+    mainClassName = 'org.smither.ircWebBot.Application'
     baseName = 'ircWebBot'
 }

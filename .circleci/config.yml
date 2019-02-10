@@ -103,21 +103,21 @@ workflows:
       - test_server:
           requires:
             - build_server
-      - docker_release:
-          requires:
-            - test_server
-          filters:
-            branches:
-              only:
-                - develop
-                - master
       - release-approval:
-          type: approval # requires that an in-app button be clicked by an appropriate member of the project to continue.
+          type: approval
           requires:
             - test_server
           filters:
             branches:
               only: master
+      - docker_release:
+          requires:
+            - release-approval
+          filters:
+            branches:
+              only:
+                - develop
+                - master
       - publish-github-release:
           requires:
             - release-approval
