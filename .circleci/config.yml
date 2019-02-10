@@ -60,8 +60,6 @@ jobs:
     docker:
       - image: cibuilds/github:0.10
     steps:
-      - checkout:
-          path: ~/ircWebBot
       - attach_workspace:
           at: ~/ircWebBot
       - run:
@@ -69,7 +67,7 @@ jobs:
           working_directory: ~/ircWebBot
           command: |
             VERSION=$(cat version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/build/libs/ircWebBot-*.jar
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./build/libs/ircWebBot-*.jar
   docker_release:
     docker:
       - image: circleci/python:3.6.6-jessie-browsers
