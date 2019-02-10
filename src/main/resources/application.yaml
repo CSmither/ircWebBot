@@ -1,10 +1,10 @@
-password: "testPasswd"
+password: "Password"
 server:
   port: 8080
 irc:
-  host: dorne.smither.org
+  host: localhost
   port: 6697
-  password: newcastle
-  nick: devBot
-  name: devBot
+  password: ""
+  nick: ircWebBot
+  name: ircWebBot
   sslEnabled: true
