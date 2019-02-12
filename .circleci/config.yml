@@ -1,4 +1,15 @@
 version: 2
+commands: # a reusable command with parameters
+  ircNotify:
+    parameters:
+      message:
+        type: string
+    steps:
+      - run: # a parameterized run step
+          name: Send Message to IRC
+          command: 'curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Hey Smither, I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID\"}"'
+executors: # a reusable executor
+
 jobs:
   build_server:
     docker:
