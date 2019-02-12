@@ -9,7 +9,7 @@ commands:
     steps:
       - run:
           name: Send Message to IRC
-          command: 'curl -X POST http://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"<< parameters.message >>"}"'
+          command: 'curl -X POST http://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"<< parameters.message >>\"}"'
     
   
 
@@ -62,7 +62,7 @@ jobs:
               git commit -m "Config Changed: Updating Circle build Config
                 https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID
               "
-              git push -q https://${GITHUB_TOKEN}@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git $CIRCLE_BRANCH
+              git push -q https://$GITHUB_TOKEN@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git $CIRCLE_BRANCH
           when: on_fail
     
   docker_release:
