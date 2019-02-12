@@ -5,7 +5,7 @@ commands: {{commands}}
 jobs: {{jobs}}
 
 workflows:
-  version: 2
+  version: 2.1
   server:
     jobs:
       - notify_start:
