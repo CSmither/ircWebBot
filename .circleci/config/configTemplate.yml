@@ -31,7 +31,11 @@ workflows:
       - release_approval:
           type: approval
           requires:
-            - request_approval
+            - test_server
+          filters:
+            branches:
+              only:
+                - master
       - docker_release:
           requires:
             - release_approval
