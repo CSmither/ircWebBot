@@ -1,0 +1,5 @@
+docker:
+  - image: circleci/python
+steps:
+  - irc_notify:
+      message: "Hey Smither, any chance of approval for a release on $CIRCLE_PROJECT_REPONAME? -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"

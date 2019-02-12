@@ -1,0 +1,5 @@
+docker:
+  - image: circleci/python
+steps:
+  - irc_notify:
+      message: "$CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH has successfully been built!"

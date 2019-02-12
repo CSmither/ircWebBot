@@ -1,0 +1,5 @@
+docker:
+  - image: circleci/python
+steps:
+  - irc_notify:
+      message: "I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"

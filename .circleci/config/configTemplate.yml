@@ -8,6 +8,9 @@ workflows:
   version: 2
   server:
     jobs:
+      - notify_start:
+          requires:
+            - check_circle_config
       - check_circle_config
       - build_server:
           requires:
@@ -15,24 +18,27 @@ workflows:
       - test_server:
           requires:
             - build_server
-      - release-approval:
-          type: approval
+      - notify_success:
+          requires:
+            - test_server
+      - request_approval:
           requires:
             - test_server
           filters:
             branches:
-              only: master
+              only:
+                - master
+      - release_approval:
+          type: approval
+          requires:
+            - request_approval
       - docker_release:
           requires:
             - release-approval
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-      - publish-github-release:
+      - publish_github_release:
           requires:
             - release-approval
-          filters:
-            branches:
-              only: master
+      - notify_release:
+          requires:
+            - docker_release
+            - publish_github_release
