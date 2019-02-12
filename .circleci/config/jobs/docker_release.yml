@@ -1,0 +1,25 @@
+docker:
+  - image: circleci/python:3.6.6-jessie-browsers
+environment:
+  REGISTRY: smither/irc-web-bot
+steps:
+  - attach_workspace:
+      at: ~/ircWebBot
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - run:
+      name: Build Docker image
+      working_directory: ~/ircWebBot
+      command: docker build -t $REGISTRY:$CIRCLE_SHA1 .
+  - run:
+      name: Push docker image to docker hub
+      working_directory: ~/ircWebBot
+      command: |
+        VERSION=$(cat version)
+        [[ $CIRCLE_BRANCH = "master" ]] && RELEASE="stable" || RELEASE="testing"
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE-$VERSION
+        docker tag $REGISTRY:$CIRCLE_SHA1 $REGISTRY:$RELEASE
+        docker push $REGISTRY:$CIRCLE_SHA1
+        docker push $REGISTRY:$RELEASE-$VERSION
+        docker push $REGISTRY:$RELEASE

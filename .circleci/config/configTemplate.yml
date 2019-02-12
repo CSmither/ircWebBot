@@ -1,0 +1,38 @@
+version: 2
+
+commands: {{commands}}
+
+jobs: {{jobs}}
+
+workflows:
+  version: 2
+  server:
+    jobs:
+      - check_circle_config
+      - build_server:
+          requires:
+            - check_circle_config
+      - test_server:
+          requires:
+            - build_server
+      - release-approval:
+          type: approval
+          requires:
+            - test_server
+          filters:
+            branches:
+              only: master
+      - docker_release:
+          requires:
+            - release-approval
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - publish-github-release:
+          requires:
+            - release-approval
+          filters:
+            branches:
+              only: master

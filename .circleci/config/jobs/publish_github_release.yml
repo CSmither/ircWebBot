@@ -1,0 +1,11 @@
+docker:
+  - image: cibuilds/github:0.10
+steps:
+  - attach_workspace:
+      at: ~/ircWebBot
+  - run:
+      name: "Publish Release on GitHub"
+      working_directory: ~/ircWebBot
+      command: |
+        VERSION=$(cat version)
+        ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./build/libs/ircWebBot-*.jar

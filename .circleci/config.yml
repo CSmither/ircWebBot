@@ -1,16 +1,18 @@
 version: 2
-commands: # a reusable command with parameters
-  ircNotify:
+
+commands: 
+  irc_notify:
     parameters:
       message:
         type: string
     steps:
-      - run: # a parameterized run step
+      - run:
           name: Send Message to IRC
           command: 'curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Hey Smither, I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID\"}"'
-executors: # a reusable executor
+    
+  
 
-jobs:
+jobs: 
   build_server:
     docker:
       - image: circleci/openjdk:11-jdk
@@ -41,44 +43,26 @@ jobs:
             - build/libs
             - build/resources
             - version
-  test_server:
+  check_circle_config:
     docker:
-      - image: circleci/openjdk:11-jdk
-    working_directory: ~/ircWebBot
-    environment:
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
+      - image: circleci/python
+    working_directory: ~/ircWebBot/.circleci
     steps:
       - checkout:
           path: ~/ircWebBot
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.gradle" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-      - run: gradle dependencies
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
-      - run: gradle check
-      - store_artifacts:
-          path: build/reports
-          destination: build_reports
-      - store_test_results:
-          path: build/test-results
-  publish-github-release:
-    docker:
-      - image: cibuilds/github:0.10
-    steps:
-      - attach_workspace:
-          at: ~/ircWebBot
+      - run: python check_config.py
       - run:
-          name: "Publish Release on GitHub"
-          working_directory: ~/ircWebBot
+          name: Halt and commit when config changed
           command: |
-            VERSION=$(cat version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./build/libs/ircWebBot-*.jar
+            git config --global user.email "$GITHUB_EMAIL"
+            git config --global user.name "$CIRCLE_USERNAME"
+            git add config.yml
+              git commit -m "Config Changed: Updating Circle build Config
+                https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID
+              "
+              git push -q https://${GITHUB_TOKEN}@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git $CIRCLE_BRANCH
+          when: on_fail
+    
   docker_release:
     docker:
       - image: circleci/python:3.6.6-jessie-browsers
@@ -105,12 +89,54 @@ jobs:
             docker push $REGISTRY:$CIRCLE_SHA1
             docker push $REGISTRY:$RELEASE-$VERSION
             docker push $REGISTRY:$RELEASE
+  publish_github_release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ~/ircWebBot
+      - run:
+          name: "Publish Release on GitHub"
+          working_directory: ~/ircWebBot
+          command: |
+            VERSION=$(cat version)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./build/libs/ircWebBot-*.jar
+  test_server:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/ircWebBot
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout:
+          path: ~/ircWebBot
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+      - run: gradle check
+      - store_artifacts:
+          path: build/reports
+          destination: build_reports
+      - store_test_results:
+          path: build/test-results
+  
 
 workflows:
   version: 2
   server:
     jobs:
-      - build_server
+      - check_circle_config
+      - build_server:
+          requires:
+            - check_circle_config
       - test_server:
           requires:
             - build_server

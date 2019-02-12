@@ -1,0 +1,16 @@
+docker:
+  - image: circleci/python
+working_directory: ~/ircWebBot/.circle
+steps:
+  - checkout:
+      path: ~/ircWebBot
+  - run: ./check_config.py
+  - run:
+      name: Halt and commit when config changed
+      command: |
+          git add config.yml
+          git commit -m "Config Changed: Updating Circle build Config
+            https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID
+          "
+          git push -q https://${GITHUB_TOKEN}@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git $CIRCLE_BRANCH
+      when: on_fail
