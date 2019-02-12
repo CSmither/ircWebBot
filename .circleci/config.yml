@@ -97,8 +97,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ./artifacts
+      - run: export VERSION=$(cat ./artifacts/.version)
       - irc_notify:
-          run: export VERSION=$(cat ./artifacts/.version)
           message: "$CIRCLE_PROJECT_REPONAME has a new release! Version $VERSION is available NOW!"
   notify_start:
     docker:
