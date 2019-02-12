@@ -34,10 +34,10 @@ workflows:
             - request_approval
       - docker_release:
           requires:
-            - release-approval
+            - release_approval
       - publish_github_release:
           requires:
-            - release-approval
+            - release_approval
       - notify_release:
           requires:
             - docker_release

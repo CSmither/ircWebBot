@@ -8,7 +8,7 @@ commands:
     steps:
       - run:
           name: Send Message to IRC
-          command: 'curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Hey Smither, I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID\"}"'
+          command: 'curl -X POST http://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"<< parameters.message >>"}"'
     
   
 
@@ -54,6 +54,7 @@ jobs:
       - run:
           name: Halt and commit when config changed
           command: |
+              curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Hey Smither, the circle config is outdated. Just fixing it now. Hold on to something....\"}"
               git config --global user.email "$GITHUB_EMAIL"
               git config --global user.name "$CIRCLE_USERNAME"
               git add config.yml
@@ -89,6 +90,27 @@ jobs:
             docker push $REGISTRY:$CIRCLE_SHA1
             docker push $REGISTRY:$RELEASE-$VERSION
             docker push $REGISTRY:$RELEASE
+  notify_release:
+    docker:
+      - image: circleci/python
+    steps:
+      - attach_workspace:
+          at: ./artifacts
+      - irc_notify:
+          run: export VERSION=$(cat ./artifacts/.version)
+          message: "$CIRCLE_PROJECT_REPONAME has a new release! Version $VERSION is available NOW!"
+  notify_start:
+    docker:
+      - image: circleci/python
+    steps:
+      - irc_notify:
+          message: "I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
+  notify_success:
+    docker:
+      - image: circleci/python
+    steps:
+      - irc_notify:
+          message: "$CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH has successfully been built!"
   publish_github_release:
     docker:
       - image: cibuilds/github:0.10
@@ -101,6 +123,12 @@ jobs:
           command: |
             VERSION=$(cat version)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./build/libs/ircWebBot-*.jar
+  request_approval:
+    docker:
+      - image: circleci/python
+    steps:
+      - irc_notify:
+          message: "Hey Smither, any chance of approval for a release on $CIRCLE_PROJECT_REPONAME? -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
   test_server:
     docker:
       - image: circleci/openjdk:11-jdk
@@ -133,6 +161,9 @@ workflows:
   version: 2
   server:
     jobs:
+      - notify_start:
+          requires:
+            - check_circle_config
       - check_circle_config
       - build_server:
           requires:
@@ -140,24 +171,27 @@ workflows:
       - test_server:
           requires:
             - build_server
-      - release-approval:
-          type: approval
+      - notify_success:
+          requires:
+            - test_server
+      - request_approval:
           requires:
             - test_server
           filters:
             branches:
-              only: master
+              only:
+                - master
+      - release_approval:
+          type: approval
+          requires:
+            - request_approval
       - docker_release:
           requires:
-            - release-approval
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-      - publish-github-release:
+            - release_approval
+      - publish_github_release:
           requires:
-            - release-approval
-          filters:
-            branches:
-              only: master
+            - release_approval
+      - notify_release:
+          requires:
+            - docker_release
+            - publish_github_release
