@@ -54,9 +54,9 @@ jobs:
       - run:
           name: Halt and commit when config changed
           command: |
-            git config --global user.email "$GITHUB_EMAIL"
-            git config --global user.name "$CIRCLE_USERNAME"
-            git add config.yml
+              git config --global user.email "$GITHUB_EMAIL"
+              git config --global user.name "$CIRCLE_USERNAME"
+              git add config.yml
               git commit -m "Config Changed: Updating Circle build Config
                 https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID
               "
