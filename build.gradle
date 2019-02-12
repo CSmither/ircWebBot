@@ -4,8 +4,6 @@ buildscript {
     }
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.0.6.RELEASE'
-//        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
-//        classpath 'com.github.jren'
     }
 }
 
@@ -32,6 +30,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web:2.0.6.RELEASE'
     compile 'org.kitteh.irc:client-lib:5.1.0'
     compile 'com.rollbar:rollbar-java:1.4.0'
+    compile 'com.rollbar:rollbar-web:1.4.0'
     compileOnly 'org.projectlombok:lombok:1.18.4'
     annotationProcessor 'org.projectlombok:lombok:1.18.4'
 
