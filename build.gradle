@@ -17,7 +17,7 @@ apply plugin: 'io.spring.dependency-management'
 
 
 group 'org.smither'
-version '0.1'
+version '1.0'
 
 sourceCompatibility = 11
 
@@ -32,6 +32,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web:2.0.6.RELEASE'
     compile 'org.kitteh.irc:client-lib:5.1.0'
     compile 'com.rollbar:rollbar-java:1.4.0'
+    compile 'com.rollbar:rollbar-web:1.4.0'
     compileOnly 'org.projectlombok:lombok:1.18.4'
     annotationProcessor 'org.projectlombok:lombok:1.18.4'
 
