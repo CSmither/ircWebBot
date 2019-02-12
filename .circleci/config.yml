@@ -2,6 +2,7 @@ version: 2
 
 commands: 
   irc_notify:
+    description: "Send message to IrcWebBot"
     parameters:
       message:
         type: string
