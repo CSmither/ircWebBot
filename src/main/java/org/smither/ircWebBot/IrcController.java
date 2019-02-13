@@ -17,8 +17,8 @@ public class IrcController {
 
     @Autowired
     public IrcController(@Value("${irc.nick}") String nick, @Value("${irc.name}") String name,
-                         @Value("${irc.host}") String host, @Value("${irc.port}") Integer port, @Value("${irc" +
-            ".sslEnabled}") Boolean sslEnabled, @Value("${irc.password}") String password) {
+                         @Value("${irc.host}") String host, @Value("${irc.port}") Integer port,
+                         @Value("${irc.sslEnabled}") Boolean sslEnabled, @Value("${irc.password}") String password) {
         this.client =
                 Client.builder().nick(nick).name(name).realName(name).server().host(host).port(port).secure(sslEnabled).secureTrustManagerFactory(new AcceptingTrustManagerFactory()).password(password).then().buildAndConnect();
         this.client.getEventManager().registerEventListener(this);

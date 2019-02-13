@@ -8,3 +8,4 @@ irc:
   nick: devBot
   name: devBot
   sslEnabled: true
+SENTRY_DSN=https://public:private@host:port/1
