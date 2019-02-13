@@ -8,7 +8,6 @@ steps:
   - run:
       name: Halt and commit when config changed
       command: |
-          curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Hey Smither, the circle config is outdated. Just fixing it now. Hold on to something....\"}"
           git config --global user.email "$GITHUB_EMAIL"
           git config --global user.name "$CIRCLE_USERNAME"
           git add config.yml
@@ -16,4 +15,5 @@ steps:
             https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID
           "
           git push -q https://$GITHUB_TOKEN@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git $CIRCLE_BRANCH
+          curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Hey Smither, the circle config is outdated. Just fixing it now. Hold on to something....\"}"
       when: on_fail
