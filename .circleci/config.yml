@@ -146,11 +146,13 @@ jobs:
       - store_test_results:
           path: build/test-results
       - irc_notify:
-          message: "Tests PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://{BUILD_ID}-{REPO_ID}-gh.circle-artifacts.com/0/reports/tests/test/index.html"
+          message: "Tests PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://$CIRCLE_BUILD_NUM-$CIRCLE_WORKFLOW_ID-gh.circle-artifacts.com/0/reports/tests/test/index.html"
+      - irc_notify:
+          message: "Tests PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://$CIRCLE_BUILD_NUM-$CIRCLE_PROJECT_NUM-gh.circle-artifacts.com/0/reports/tests/test/index.html"
       - run:
           name: Report Failure to IRC
           command: |
-            curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Tests FAILED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://{BUILD_ID}-{REPO_ID}-gh.circle-artifacts.com/0/reports/tests/test/index.html\"}"
+            curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Tests FAILED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://$CIRCLE_BUILD_NUM-$CIRCLE_PROJECT_NUM-gh.circle-artifacts.com/0/reports/tests/test/index.html\"}"
           when: on_fail
   
 
@@ -175,11 +177,7 @@ workflows:
       - release_approval:
           type: approval
           requires:
-            - test_server
-          filters:
-            branches:
-              only:
-                - master
+            - request_approval
       - docker_release:
           requires:
             - release_approval
