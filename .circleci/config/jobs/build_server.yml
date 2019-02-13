@@ -5,6 +5,8 @@ environment:
   JVM_OPTS: -Xmx3200m
   TERM: dumb
 steps:
+  - irc_notify:
+      message: "I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
   - checkout:
       path: ~/ircWebBot
   - restore_cache:

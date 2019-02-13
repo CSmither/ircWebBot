@@ -20,6 +20,11 @@ steps:
   - run: gradle check
   - store_artifacts:
       path: build/reports
-      destination: build_reports
+      destination: reports
   - store_test_results:
       path: build/test-results
+  - irc_notify:
+      message: "Tests 03PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://{BUILD_ID}-{REPO_ID}-gh.circle-artifacts.com/0/reports/tests/test/index.html"
+  - irc_notify:
+      message: "Tests 04FAILED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://{BUILD_ID}-{REPO_ID}-gh.circle-artifacts.com/0/reports/tests/test/index.html"
+      when: on_fail

@@ -8,9 +8,6 @@ workflows:
   version: 2.1
   server:
     jobs:
-      - notify_start:
-          requires:
-            - check_circle_config
       - check_circle_config
       - build_server:
           requires:
@@ -18,9 +15,6 @@ workflows:
       - test_server:
           requires:
             - build_server
-      - notify_success:
-          requires:
-            - test_server
       - request_approval:
           requires:
             - test_server
