@@ -146,8 +146,6 @@ jobs:
       - store_test_results:
           path: build/test-results
       - irc_notify:
-          message: "Tests PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://$CIRCLE_BUILD_NUM-$CIRCLE_WORKFLOW_ID-gh.circle-artifacts.com/0/reports/tests/test/index.html"
-      - irc_notify:
           message: "Tests PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://$CIRCLE_BUILD_NUM-$CIRCLE_PROJECT_NUM-gh.circle-artifacts.com/0/reports/tests/test/index.html"
       - run:
           name: Report Failure to IRC
