@@ -9,8 +9,7 @@ commands:
     steps:
       - run:
           name: Send Message to IRC
-          command: 'curl -X POST http://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"<< parameters.message >>\"}"'
-    
+          command: 'curl -X POST http://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"<< parameters.message >>\"}" ; exit 0'
   
 
 jobs: 
@@ -22,6 +21,8 @@ jobs:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
+      - irc_notify:
+          message: "I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
       - checkout:
           path: ~/ircWebBot
       - restore_cache:
@@ -100,18 +101,6 @@ jobs:
       - run: export VERSION=$(cat ./artifacts/.version)
       - irc_notify:
           message: "$CIRCLE_PROJECT_REPONAME has a new release! Version $VERSION is available NOW!"
-  notify_start:
-    docker:
-      - image: circleci/python
-    steps:
-      - irc_notify:
-          message: "I am starting a build on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH branch -> https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
-  notify_success:
-    docker:
-      - image: circleci/python
-    steps:
-      - irc_notify:
-          message: "$CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH has successfully been built!"
   publish_github_release:
     docker:
       - image: cibuilds/github:0.10
@@ -153,18 +142,22 @@ jobs:
       - run: gradle check
       - store_artifacts:
           path: build/reports
-          destination: build_reports
+          destination: reports
       - store_test_results:
           path: build/test-results
+      - irc_notify:
+          message: "Tests PASSED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://{BUILD_ID}-{REPO_ID}-gh.circle-artifacts.com/0/reports/tests/test/index.html"
+      - run:
+          name: Report Failure to IRC
+          command: |
+            curl -X POST https://$WEBIRC_URL/sendMsg -H "Content-Type: application/json" -d "{\"password\":\"$WEBIRC_PASSWORD\", \"channel\":\"$IRC_CHANNEL\", \"key\":\"$IRC_KEY\", \"message\":\"Tests FAILED on $CIRCLE_PROJECT_REPONAME $CIRCLE_BRANCH. See results HERE -> https://{BUILD_ID}-{REPO_ID}-gh.circle-artifacts.com/0/reports/tests/test/index.html\"}"
+          when: on_fail
   
 
 workflows:
   version: 2.1
   server:
     jobs:
-      - notify_start:
-          requires:
-            - check_circle_config
       - check_circle_config
       - build_server:
           requires:
@@ -172,9 +165,6 @@ workflows:
       - test_server:
           requires:
             - build_server
-      - notify_success:
-          requires:
-            - test_server
       - request_approval:
           requires:
             - test_server
